@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Run Spec Linter</title>
+  <style>
+    :root {
+      --bg: #08111f;
+      --panel: #0f1b2e;
+      --panel-2: #12233b;
+      --border: rgba(148, 163, 184, 0.2);
+      --text: #e5eefc;
+      --muted: #9eb0cd;
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --good: #34d399;
+      --warn: #fbbf24;
+      --bad: #f87171;
+      --chip: rgba(125, 211, 252, 0.1);
+      --shadow: 0 16px 40px rgba(0,0,0,0.28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #132749 0%, var(--bg) 42%, #050a13 100%);
+      min-height: 100vh;
+    }
+    a { color: var(--accent); }
+    .wrap {
+      width: min(1320px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .hero, .panel {
+      background: linear-gradient(180deg, rgba(18,35,59,0.95), rgba(9,17,31,0.96));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+    .hero {
+      padding: 28px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -90px auto;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(167, 139, 250, 0.22), transparent 68%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--chip);
+      color: var(--accent);
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      margin-bottom: 14px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(32px, 5vw, 54px);
+      line-height: 1;
+    }
+    .subtitle {
+      max-width: 960px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+    .hero-grid, .main-grid, .matrix, .story-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .hero-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 22px;
+    }
+    .stat {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .stat strong {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 6px;
+    }
+    .stat span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .main-grid {
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: start;
+    }
+    .panel {
+      padding: 22px;
+    }
+    h2, h3 {
+      margin-top: 0;
+    }
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    textarea {
+      width: 100%;
+      min-height: 430px;
+      resize: vertical;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(4, 10, 20, 0.86);
+      color: var(--text);
+      padding: 18px;
+      font: 14px/1.6 "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    button {
+      border: 0;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 700;
+      color: #08111f;
+      background: linear-gradient(135deg, var(--accent), #c4b5fd);
+    }
+    button.secondary {
+      background: rgba(255,255,255,0.07);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .chip {
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted);
+    }
+    .scorebox {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .card {
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .rank {
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .score {
+      font-weight: 800;
+      font-size: 22px;
+    }
+    .progress {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+      margin: 10px 0 14px;
+    }
+    .bar {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.6;
+    }
+    .output {
+      white-space: pre-wrap;
+      font: 13px/1.55 "SFMono-Regular", Consolas, monospace;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(4, 10, 20, 0.88);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-top: 16px;
+      overflow: auto;
+      max-height: 420px;
+    }
+    .matrix {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      margin-top: 20px;
+    }
+    .matrix .card p, .story-grid .card p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .pill {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(52, 211, 153, 0.12);
+      color: #9ef0cf;
+    }
+    .story-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      margin-top: 14px;
+    }
+    .foot {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    @media (max-width: 980px) {
+      .main-grid { grid-template-columns: 1fr; }
+      textarea { min-height: 340px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Weekly Sunday Project Builder • Agent-first ship</div>
+      <h1>Agent Run Spec Linter</h1>
+      <p class="subtitle">
+        A machine-readable planning and linting tool for autonomous agent runs. Feed it a JSON task spec and it recommends the best runtime posture,
+        eval upgrades, and governance controls based on this week’s biggest agent-platform signals: Anthropic Managed Agents, Google’s Gemini Enterprise Agent Platform,
+        GitHub Copilot’s GPT-5.5 rollout for complex agentic coding, and OpenAI’s warning that SWE-bench Verified is no longer enough.
+      </p>
+      <div class="hero-grid">
+        <div class="stat"><strong>Agent-first</strong><span>Built for machine-readable run planning, not consumer chat UX.</span></div>
+        <div class="stat"><strong>4 sources</strong><span>Fresh primary sources plus reporting/community validation from this run.</span></div>
+        <div class="stat"><strong>JSON out</strong><span>Produces a recommendation bundle an agent supervisor can consume directly.</span></div>
+        <div class="stat"><strong>Eval-aware</strong><span>Flags brittle benchmark-only validation and suggests real-world checks.</span></div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="panel">
+        <h2>Input: run spec</h2>
+        <label class="label" for="specInput">Paste JSON describing the agent job</label>
+        <textarea id="specInput"></textarea>
+        <div class="button-row">
+          <button id="lintBtn">Lint run spec</button>
+          <button class="secondary" id="sampleBtn">Load alternate sample</button>
+          <button class="secondary" id="copyBtn">Copy output JSON</button>
+        </div>
+        <div class="note">
+          Expected fields are flexible. Useful keys include <code>task_type</code>, <code>duration_hours</code>, <code>needs_code_execution</code>,
+          <code>multi_agent</code>, <code>governance_level</code>, <code>evaluation_mode</code>, <code>risk_tolerance</code>, and <code>human_review</code>.
+        </div>
+        <div class="chips">
+          <div class="chip">long_horizon</div>
+          <div class="chip">coding_agent</div>
+          <div class="chip">enterprise_governance</div>
+          <div class="chip">eval_upgrades</div>
+          <div class="chip">machine-readable output</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Recommendation</h2>
+        <div id="summary"></div>
+        <div class="scorebox" id="scorebox"></div>
+        <h3 style="margin-top:18px;">Export JSON</h3>
+        <div class="output" id="jsonOutput">Run the linter to generate an export bundle.</div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:20px;">
+      <h2>Why these heuristics exist this week</h2>
+      <div class="story-grid">
+        <article class="card">
+          <div class="pill">Anthropic engineering</div>
+          <h3>Managed Agents push long-horizon runtime abstractions</h3>
+          <p>Anthropic says Managed Agents is a hosted service for long-horizon work with stable interfaces around sessions, harnesses, and sandboxes so the implementation can evolve without breaking the agent contract.</p>
+          <p><a href="https://www.anthropic.com/engineering/managed-agents">Primary source</a></p>
+        </article>
+        <article class="card">
+          <div class="pill">Google Cloud</div>
+          <h3>Enterprise agents now need build, govern, and optimize loops</h3>
+          <p>Google launched Gemini Enterprise Agent Platform to build, scale, govern, and optimize agents, tying together model selection, orchestration, DevOps, and security. Reuters separately framed agents as central to Google’s enterprise money-making push.</p>
+          <p><a href="https://cloud.google.com/blog/products/ai-machine-learning/introducing-gemini-enterprise-agent-platform">Primary source</a> · <a href="https://news.google.com/rss/search?q=Reuters%20AI%20agents%20enterprise%20April%202026&hl=en-US&gl=US&ceid=US:en">Reporting discovery</a></p>
+        </article>
+        <article class="card">
+          <div class="pill">GitHub Copilot</div>
+          <h3>Complex agentic coding is now a premium planning decision</h3>
+          <p>GitHub says GPT-5.5 is rolling out to Copilot and performed strongest on complex, multi-step agentic coding tasks in early testing, but at a 7.5× premium request multiplier.</p>
+          <p><a href="https://github.blog/changelog/2026-04-24-gpt-5-5-is-generally-available-for-github-copilot/">Primary source</a> · <a href="https://hn.algolia.com/?dateRange=all&page=0&prefix=false&query=GPT-5.5%20is%20generally%20available%20for%20GitHub%20Copilot&sort=byPopularity&type=story">Community signal</a></p>
+        </article>
+        <article class="card">
+          <div class="pill">OpenAI research</div>
+          <h3>Benchmark-only evals are going stale</h3>
+          <p>OpenAI argues SWE-bench Verified no longer measures frontier coding capabilities because of contaminated tasks and flawed tests that reject correct solutions. This linter treats benchmark-only evaluation as a warning sign.</p>
+          <p><a href="https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/">Primary source</a> · <a href="https://hn.algolia.com/?dateRange=all&page=0&prefix=false&query=Why%20SWE-bench%20Verified%20no%20longer%20measures%20frontier%20coding%20capabilities&sort=byPopularity&type=story">Community signal</a></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:20px;">
+      <h2>Platform scoring dimensions</h2>
+      <div class="matrix">
+        <article class="card">
+          <h3>Anthropic Managed Agents</h3>
+          <p>Best when you need long-horizon execution, stable session history, sandboxed code steps, and the ability to let the runtime evolve underneath stable interfaces.</p>
+        </article>
+        <article class="card">
+          <h3>Google Gemini Enterprise Agent Platform</h3>
+          <p>Best when governance, orchestration, DevOps, enterprise integration, and multi-agent coordination matter as much as raw model quality.</p>
+        </article>
+        <article class="card">
+          <h3>GitHub Copilot + GPT-5.5</h3>
+          <p>Best when the run is coding-heavy and multi-step, but you should account for premium request cost and whether you truly need top-end coding performance.</p>
+        </article>
+        <article class="card">
+          <h3>OpenAI eval warning mode</h3>
+          <p>Not a runtime, but a guardrail: if the spec relies on narrow synthetic tests alone, the linter tells you to add deploy, environment, rollback, and human-review checks.</p>
+        </article>
+      </div>
+      <p class="foot">
+        This tool intentionally prioritizes machine-readable planning. The export JSON includes a winning platform, score breakdowns, risk flags, and recommended eval augmentations.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    const sampleSpecs = [
+      {
+        task_name: "triage-and-patch-regression",
+        task_type: "coding-agent",
+        duration_hours: 6,
+        needs_code_execution: true,
+        multi_agent: true,
+        governance_level: "medium",
+        evaluation_mode: ["unit-tests", "benchmark-only"],
+        risk_tolerance: "medium",
+        human_review: "required-before-merge",
+        budget_sensitivity: "medium",
+        deployment_scope: "repo-only"
+      },
+      {
+        task_name: "enterprise-support-ops-agent",
+        task_type: "enterprise-workflow",
+        duration_hours: 18,
+        needs_code_execution: false,
+        multi_agent: true,
+        governance_level: "high",
+        evaluation_mode: ["human-acceptance", "production-shadow", "workflow-SLA"],
+        risk_tolerance: "low",
+        human_review: "required-before-external-action",
+        budget_sensitivity: "low",
+        deployment_scope: "customer-facing-integrations"
+      }
+    ];
+
+    const platformMeta = {
+      anthropic: {
+        title: "Anthropic Managed Agents",
+        rationale: "Optimized for long-horizon runtime control with stable session / harness / sandbox abstractions.",
+      },
+      google: {
+        title: "Gemini Enterprise Agent Platform",
+        rationale: "Optimized for governance, orchestration, enterprise integration, and operating agents at scale.",
+      },
+      github: {
+        title: "GitHub Copilot + GPT-5.5",
+        rationale: "Optimized for complex multi-step coding tasks, with premium request cost tradeoffs.",
+      }
+    };
+
+    const weights = {
+      long_horizon: 18,
+      code_execution: 18,
+      multi_agent: 16,
+      governance: 18,
+      enterprise_scope: 12,
+      budget_sensitivity: 10,
+      eval_maturity: 8
+    };
+
+    const input = document.getElementById("specInput");
+    const scorebox = document.getElementById("scorebox");
+    const jsonOutput = document.getElementById("jsonOutput");
+    const summary = document.getElementById("summary");
+    const lintBtn = document.getElementById("lintBtn");
+    const sampleBtn = document.getElementById("sampleBtn");
+    const copyBtn = document.getElementById("copyBtn");
+
+    function setSample(index = 0) {
+      input.value = JSON.stringify(sampleSpecs[index], null, 2);
+    }
+
+    function normalizeArray(value) {
+      if (Array.isArray(value)) return value.map(String);
+      if (value === undefined || value === null || value === "") return [];
+      return [String(value)];
+    }
+
+    function lintSpec(spec) {
+      const duration = Number(spec.duration_hours || 0);
+      const evalModes = normalizeArray(spec.evaluation_mode).map(v => v.toLowerCase());
+      const governance = String(spec.governance_level || "medium").toLowerCase();
+      const riskTolerance = String(spec.risk_tolerance || "medium").toLowerCase();
+      const budgetSensitivity = String(spec.budget_sensitivity || "medium").toLowerCase();
+      const taskType = String(spec.task_type || "general").toLowerCase();
+      const deploymentScope = String(spec.deployment_scope || "internal").toLowerCase();
+      const needsCode = Boolean(spec.needs_code_execution);
+      const multiAgent = Boolean(spec.multi_agent);
+      const humanReview = String(spec.human_review || "unspecified").toLowerCase();
+
+      const scores = { anthropic: 30, google: 30, github: 30 };
+      const reasons = { anthropic: [], google: [], github: [] };
+      const riskFlags = [];
+      const evalUpgrades = [];
+      const operatorChecklist = [];
+
+      if (duration >= 8) {
+        scores.anthropic += weights.long_horizon;
+        scores.google += 8;
+        reasons.anthropic.push("Long-horizon duration favors hosted session + harness + sandbox abstractions.");
+        reasons.google.push("Long-running enterprise flows may benefit from platform orchestration.");
+      } else if (duration >= 3) {
+        scores.github += 8;
+        scores.anthropic += 10;
+        reasons.github.push("Moderate-duration coding work fits a high-performance coding agent.");
+      }
+
+      if (needsCode) {
+        scores.github += weights.code_execution;
+        scores.anthropic += 10;
+        reasons.github.push("Spec explicitly needs code execution and multi-step code problem solving.");
+        reasons.anthropic.push("Sandboxed execution support matters when the run edits code or files.");
+      } else {
+        scores.google += 10;
+        reasons.google.push("Non-code enterprise automation favors orchestration and integration over coding specialization.");
+      }
+
+      if (multiAgent) {
+        scores.google += weights.multi_agent;
+        scores.anthropic += 6;
+        reasons.google.push("Multi-agent coordination is a core fit for an enterprise agent platform.");
+      }
+
+      if (governance === "high") {
+        scores.google += weights.governance;
+        reasons.google.push("High governance requirements align with build-govern-optimize enterprise controls.");
+        if (humanReview === "unspecified") {
+          riskFlags.push("High-governance run lacks an explicit human review gate.");
+        }
+      } else if (governance === "low") {
+        scores.github += 4;
+      }
+
+      if (deploymentScope.includes("customer") || deploymentScope.includes("external") || deploymentScope.includes("integration")) {
+        scores.google += weights.enterprise_scope;
+        reasons.google.push("External integrations raise the value of enterprise orchestration and security posture.");
+      }
+
+      if (taskType.includes("coding")) {
+        scores.github += 12;
+        reasons.github.push("Coding-agent task type matches the strongest published GitHub GPT-5.5 positioning.");
+      }
+      if (taskType.includes("enterprise") || taskType.includes("workflow")) {
+        scores.google += 10;
+      }
+
+      if (budgetSensitivity === "high") {
+        scores.github -= weights.budget_sensitivity;
+        reasons.github.push("Budget-sensitive runs should be careful with a 7.5× premium request multiplier.");
+      } else if (budgetSensitivity === "low") {
+        scores.github += 6;
+      }
+
+      const benchmarkOnly = evalModes.includes("benchmark-only") || evalModes.includes("swe-bench") || evalModes.includes("swe-bench-verified");
+      if (benchmarkOnly) {
+        riskFlags.push("Spec relies on benchmark-only evaluation; OpenAI says SWE-bench Verified is no longer sufficient for frontier coding capability measurement.");
+        evalUpgrades.push("Add real repository or environment tasks with rollback checks.");
+        evalUpgrades.push("Add human acceptance review on top of automated tests.");
+        evalUpgrades.push("Measure latency, cost, intervention count, and failure recovery.");
+      }
+
+      if (!evalModes.includes("production-shadow") && !evalModes.includes("canary") && !evalModes.includes("human-acceptance")) {
+        evalUpgrades.push("Add a shadow, canary, or human-acceptance stage before full autonomy.");
+      }
+      if (!evalModes.includes("workflow-sla") && deploymentScope !== "repo-only") {
+        evalUpgrades.push("Track workflow SLA / success-rate metrics for externally scoped runs.");
+      }
+      if (!humanReview.includes("required") && (riskTolerance === "low" || governance === "high")) {
+        riskFlags.push("Spec allows too much autonomy for its declared low-risk tolerance or high governance level.");
+      }
+      if (duration >= 12 && !multiAgent) {
+        operatorChecklist.push("Consider decomposing the run into planner/executor/reviewer roles for resilience.");
+      }
+      if (needsCode) {
+        operatorChecklist.push("Capture diff quality, test pass rate, and rollback readiness in the run log.");
+      }
+      if (multiAgent) {
+        operatorChecklist.push("Store shared state explicitly so agents do not diverge on context.");
+      }
+      if (deploymentScope !== "repo-only") {
+        operatorChecklist.push("Gate external actions behind policy checks and audit logs.");
+      }
+
+      Object.keys(scores).forEach(key => {
+        scores[key] = Math.max(0, Math.min(100, Math.round(scores[key])));
+      });
+
+      const ranked = Object.entries(scores)
+        .map(([key, score]) => ({ key, score, ...platformMeta[key], reasons: reasons[key] }))
+        .sort((a, b) => b.score - a.score);
+
+      const winner = ranked[0];
+      const recommendation = {
+        task_name: spec.task_name || "unnamed-run",
+        recommended_platform: winner.title,
+        recommended_platform_key: winner.key,
+        confidence: winner.score >= 80 ? "high" : winner.score >= 65 ? "medium" : "low",
+        why: winner.reasons,
+        score_breakdown: ranked.map(item => ({
+          platform_key: item.key,
+          platform: item.title,
+          score: item.score,
+          rationale: item.rationale,
+          reasons: item.reasons
+        })),
+        eval_upgrades: [...new Set(evalUpgrades)],
+        risk_flags: [...new Set(riskFlags)],
+        operator_checklist: [...new Set(operatorChecklist)],
+        source_basis: [
+          {
+            source: "Anthropic Managed Agents",
+            url: "https://www.anthropic.com/engineering/managed-agents",
+            signal: "Hosted long-horizon service with stable session, harness, and sandbox interfaces."
+          },
+          {
+            source: "Google Gemini Enterprise Agent Platform",
+            url: "https://cloud.google.com/blog/products/ai-machine-learning/introducing-gemini-enterprise-agent-platform",
+            signal: "Platform to build, scale, govern, and optimize agents with orchestration, DevOps, and security."
+          },
+          {
+            source: "GitHub Copilot GPT-5.5",
+            url: "https://github.blog/changelog/2026-04-24-gpt-5-5-is-generally-available-for-github-copilot/",
+            signal: "Strong on complex multi-step agentic coding tasks, with 7.5× premium request multiplier."
+          },
+          {
+            source: "OpenAI on SWE-bench Verified",
+            url: "https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/",
+            signal: "Benchmark contamination and flawed tests make benchmark-only eval a poor frontier proxy."
+          }
+        ]
+      };
+
+      return recommendation;
+    }
+
+    function renderResult(result) {
+      summary.innerHTML = `
+        <div class="card">
+          <div class="rank">Top recommendation</div>
+          <div style="font-size:28px;font-weight:800;margin:6px 0 8px;">${result.recommended_platform}</div>
+          <div style="color:var(--muted);line-height:1.7;">Confidence: <strong style="color:var(--text);text-transform:capitalize;">${result.confidence}</strong>. ${result.why.join(" ") || "No detailed rationale available."}</div>
+        </div>
+      `;
+
+      scorebox.innerHTML = result.score_breakdown.map((item, index) => `
+        <div class="card">
+          <div class="topline">
+            <div>
+              <div class="rank">Rank #${index + 1}</div>
+              <div style="font-size:20px;font-weight:700;">${item.platform}</div>
+            </div>
+            <div class="score">${item.score}</div>
+          </div>
+          <div class="progress"><div class="bar" style="width:${item.score}%;"></div></div>
+          <ul>${item.reasons.map(reason => `<li>${reason}</li>`).join("") || "<li>Baseline fit only.</li>"}</ul>
+        </div>
+      `).join("");
+
+      jsonOutput.textContent = JSON.stringify(result, null, 2);
+    }
+
+    function runLint() {
+      try {
+        const spec = JSON.parse(input.value);
+        const result = lintSpec(spec);
+        renderResult(result);
+      } catch (error) {
+        summary.innerHTML = `
+          <div class="card" style="border-color: rgba(248,113,113,0.45);">
+            <div class="rank" style="color:#fecaca;">Input error</div>
+            <div style="font-size:20px;font-weight:700;margin:6px 0 8px;">JSON parse failed</div>
+            <div style="color:var(--muted);line-height:1.7;">${error.message}</div>
+          </div>
+        `;
+        scorebox.innerHTML = "";
+        jsonOutput.textContent = "Fix the JSON input and re-run the linter.";
+      }
+    }
+
+    lintBtn.addEventListener("click", runLint);
+    sampleBtn.addEventListener("click", () => {
+      const useAlt = input.value.includes("triage-and-patch-regression");
+      setSample(useAlt ? 1 : 0);
+      runLint();
+    });
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(jsonOutput.textContent);
+        copyBtn.textContent = "Copied";
+        setTimeout(() => { copyBtn.textContent = "Copy output JSON"; }, 1200);
+      } catch (error) {
+        copyBtn.textContent = "Copy failed";
+        setTimeout(() => { copyBtn.textContent = "Copy output JSON"; }, 1200);
+      }
+    });
+
+    setSample(0);
+    runLint();
+  </script>
+</body>
+</html>
