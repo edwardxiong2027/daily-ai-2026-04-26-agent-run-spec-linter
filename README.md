@@ -35,7 +35,7 @@ python3 -m http.server 8000
 Then open: http://localhost:8000
 
 ## Live URL
-Pending deployment.
+https://edwardxiong2027.github.io/daily-ai-2026-04-26-agent-run-spec-linter/
 
 ## Repo URL
-Pending creation.
+https://github.com/edwardxiong2027/daily-ai-2026-04-26-agent-run-spec-linter
