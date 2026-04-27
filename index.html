@@ -4,267 +4,269 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Agent Run Spec Linter</title>
-  <style>
-    :root {
-      --bg: #08111f;
-      --panel: #0f1b2e;
-      --panel-2: #12233b;
-      --border: rgba(148, 163, 184, 0.2);
-      --text: #e5eefc;
-      --muted: #9eb0cd;
-      --accent: #7dd3fc;
-      --accent-2: #a78bfa;
-      --good: #34d399;
-      --warn: #fbbf24;
-      --bad: #f87171;
-      --chip: rgba(125, 211, 252, 0.1);
-      --shadow: 0 16px 40px rgba(0,0,0,0.28);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background: radial-gradient(circle at top, #132749 0%, var(--bg) 42%, #050a13 100%);
-      min-height: 100vh;
-    }
-    a { color: var(--accent); }
-    .wrap {
-      width: min(1320px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 28px 0 40px;
-    }
-    .hero, .panel {
-      background: linear-gradient(180deg, rgba(18,35,59,0.95), rgba(9,17,31,0.96));
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: var(--shadow);
-    }
-    .hero {
-      padding: 28px;
-      margin-bottom: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: auto -60px -90px auto;
-      width: 260px;
-      height: 260px;
-      background: radial-gradient(circle, rgba(167, 139, 250, 0.22), transparent 68%);
-      pointer-events: none;
-    }
-    .eyebrow {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: var(--chip);
-      color: var(--accent);
-      font-size: 13px;
-      letter-spacing: 0.03em;
-      margin-bottom: 14px;
-    }
-    h1 {
-      margin: 0 0 10px;
-      font-size: clamp(32px, 5vw, 54px);
-      line-height: 1;
-    }
-    .subtitle {
-      max-width: 960px;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.6;
-    }
-    .hero-grid, .main-grid, .matrix, .story-grid {
-      display: grid;
-      gap: 16px;
-    }
-    .hero-grid {
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      margin-top: 22px;
-    }
-    .stat {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .stat strong {
-      display: block;
-      font-size: 26px;
-      margin-bottom: 6px;
-    }
-    .stat span {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-    .main-grid {
-      grid-template-columns: 1.15fr 0.85fr;
-      align-items: start;
-    }
-    .panel {
-      padding: 22px;
-    }
-    h2, h3 {
-      margin-top: 0;
-    }
-    .label {
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 8px;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-    textarea {
-      width: 100%;
-      min-height: 430px;
-      resize: vertical;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.09);
-      background: rgba(4, 10, 20, 0.86);
-      color: var(--text);
-      padding: 18px;
-      font: 14px/1.6 "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    }
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-    button {
-      border: 0;
-      cursor: pointer;
-      border-radius: 999px;
-      padding: 12px 18px;
-      font-weight: 700;
-      color: #08111f;
-      background: linear-gradient(135deg, var(--accent), #c4b5fd);
-    }
-    button.secondary {
-      background: rgba(255,255,255,0.07);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .note {
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .chip {
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--muted);
-    }
-    .scorebox {
-      display: grid;
-      gap: 14px;
-      margin-top: 16px;
-    }
-    .card {
-      border-radius: 18px;
-      padding: 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-    }
-    .topline {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .rank {
-      color: var(--muted);
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .score {
-      font-weight: 800;
-      font-size: 22px;
-    }
-    .progress {
-      width: 100%;
-      height: 10px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: rgba(255,255,255,0.06);
-      margin: 10px 0 14px;
-    }
-    .bar {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    }
-    ul {
-      margin: 0;
-      padding-left: 18px;
-      line-height: 1.6;
-    }
-    .output {
-      white-space: pre-wrap;
-      font: 13px/1.55 "SFMono-Regular", Consolas, monospace;
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(4, 10, 20, 0.88);
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-top: 16px;
-      overflow: auto;
-      max-height: 420px;
-    }
-    .matrix {
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      margin-top: 20px;
-    }
-    .matrix .card p, .story-grid .card p {
-      color: var(--muted);
-      line-height: 1.6;
-    }
-    .pill {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      background: rgba(52, 211, 153, 0.12);
-      color: #9ef0cf;
-    }
-    .story-grid {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      margin-top: 14px;
-    }
-    .foot {
-      margin-top: 20px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
-    }
-    @media (max-width: 980px) {
-      .main-grid { grid-template-columns: 1fr; }
-      textarea { min-height: 340px; }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+<style>
+  :root {
+    --bg: #f4f4f4;
+    --panel: #ffffff;
+    --panel-2: #f4f4f4;
+    --border: #dcdcdc;
+    --text: #161616;
+    --muted: #525252;
+    --accent: #0f62fe;
+    --accent-2: #002d9c;
+    --good: #198038;
+    --warn: #b28600;
+    --bad: #da1e28;
+    --chip: rgba(15, 98, 254, 0.08);
+    --shadow: 0 18px 38px rgba(22,22,22,0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "IBM Plex Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text);
+    background: linear-gradient(180deg, #ffffff 0%, #f4f4f4 100%);
+    min-height: 100vh;
+  }
+  a { color: var(--accent); }
+  code, .output, textarea { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .wrap {
+    width: min(1320px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 28px 0 40px;
+  }
+  .hero, .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }
+  .hero {
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 auto;
+    width: 180px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--accent));
+    pointer-events: none;
+  }
+  .eyebrow {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--chip);
+    color: var(--accent);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  h1 {
+    margin: 0 0 10px;
+    font-size: clamp(34px, 5vw, 56px);
+    line-height: 1;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+  }
+  .subtitle {
+    max-width: 980px;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  .hero-grid, .main-grid, .matrix, .story-grid {
+    display: grid;
+    gap: 16px;
+  }
+  .hero-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    margin-top: 22px;
+  }
+  .stat {
+    padding: 16px;
+    border-radius: 0;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+  }
+  .stat strong {
+    display: block;
+    font-size: 26px;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .stat span {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .main-grid {
+    grid-template-columns: 1.12fr 0.88fr;
+    align-items: start;
+  }
+  .panel { padding: 22px; }
+  h2, h3 { margin-top: 0; }
+  .label {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  textarea {
+    width: 100%;
+    min-height: 430px;
+    resize: vertical;
+    border-radius: 0;
+    border: 1px solid transparent;
+    border-bottom: 2px solid #161616;
+    background: #f4f4f4;
+    color: var(--text);
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  button {
+    border: 1px solid transparent;
+    cursor: pointer;
+    border-radius: 0;
+    padding: 12px 18px;
+    font-weight: 600;
+    color: #ffffff;
+    background: var(--accent);
+  }
+  button.secondary {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .note {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .chip {
+    border-radius: 999px;
+    padding: 7px 10px;
+    font-size: 12px;
+    background: rgba(15,98,254,0.06);
+    border: 1px solid rgba(15,98,254,0.12);
+    color: var(--muted);
+  }
+  .scorebox {
+    display: grid;
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .card {
+    border-radius: 0;
+    padding: 16px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+  }
+  .topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .rank {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .score {
+    font-weight: 700;
+    font-size: 22px;
+  }
+  .progress {
+    width: 100%;
+    height: 10px;
+    overflow: hidden;
+    background: rgba(22,22,22,0.06);
+    margin: 10px 0 14px;
+  }
+  .bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+  ul { margin: 0; padding-left: 18px; line-height: 1.6; }
+  .output {
+    white-space: pre-wrap;
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 16px;
+    border-radius: 0;
+    background: #f4f4f4;
+    border: 1px solid var(--border);
+    margin-top: 16px;
+    overflow: auto;
+    max-height: 420px;
+  }
+  .matrix {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    margin-top: 20px;
+  }
+  .matrix .card p, .story-grid .card p {
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .pill {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: rgba(25,128,56,0.1);
+    color: var(--good);
+  }
+  .story-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    margin-top: 14px;
+  }
+  .foot {
+    margin-top: 20px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  @media (max-width: 980px) {
+    .main-grid { grid-template-columns: 1fr; }
+    textarea { min-height: 340px; }
+  }
+</style>
+
 </head>
 <body>
   <div class="wrap">
     <section class="hero">
-      <div class="eyebrow">Weekly Sunday Project Builder • Agent-first ship</div>
+      <div class="eyebrow">Agent operator console • runtime linting</div>
       <h1>Agent Run Spec Linter</h1>
       <p class="subtitle">
         A machine-readable planning and linting tool for autonomous agent runs. Feed it a JSON task spec and it recommends the best runtime posture,
